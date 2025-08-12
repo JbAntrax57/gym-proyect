@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         // Seed membership types
         $this->call([
             MembershipTypeSeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }
