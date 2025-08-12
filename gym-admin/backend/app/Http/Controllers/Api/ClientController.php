@@ -66,7 +66,7 @@ class ClientController extends Controller
                     'last_page' => $clients->lastPage(),
                     'from' => $clients->firstItem(),
                     'to' => $clients->lastItem(),
-                    'rowCount' => $totalCount
+                    'rowCounts' => $totalCount
                 ],
                 'message' => 'Clientes obtenidos exitosamente'
             ]);

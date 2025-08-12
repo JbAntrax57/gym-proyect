@@ -1,146 +1,140 @@
 <template>
   <q-page class="q-pa-md">
-    <div class="row q-col-gutter-md">
-      <!-- Título del Dashboard -->
-      <div class="col-12">
-        <h4 class="text-h4 q-mb-md text-primary">
-          <q-icon name="dashboard" class="q-mr-sm" />
-          Dashboard del Gimnasio
-        </h4>
+    <!-- Header del Dashboard -->
+    <div class="row q-mb-lg items-center">
+      <div class="text-h4 text-weight-bold text-gym-black">
+        <q-icon name="dashboard" class="q-mr-md" />
+        Dashboard del Gym
       </div>
+      <q-space />
+      <q-btn class="btn-gym-primary" icon="refresh" label="Actualizar" @click="refreshData" />
+    </div>
 
-      <!-- Tarjetas de Métricas -->
-      <div class="col-12 col-md-3">
-        <q-card class="bg-primary text-white">
-          <q-card-section>
-            <div class="text-h6">{{ totalClients }}</div>
-            <div class="text-subtitle2">Total de Clientes</div>
-            <q-icon name="people" size="3rem" class="absolute-bottom-right q-mr-md q-mb-md opacity-20" />
+    <!-- Tarjetas de Estadísticas -->
+    <div class="row q-gutter-md q-mb-lg">
+      <div class="col-12 col-sm-6 col-md-3">
+        <q-card class="card-gym animate-fade-in-up">
+          <q-card-section class="text-center">
+            <q-icon name="people" size="3rem" color="var(--gym-red)" />
+            <div class="text-h4 text-weight-bold text-gym-black q-mt-sm">{{ stats.totalClients }}</div>
+            <div class="text-subtitle2 text-gym-red">Total de Clientes</div>
           </q-card-section>
         </q-card>
       </div>
 
-      <div class="col-12 col-md-3">
-        <q-card class="bg-positive text-white">
-          <q-card-section>
-            <div class="text-h6">{{ activeMemberships }}</div>
-            <div class="text-subtitle2">Membresías Activas</div>
-            <q-icon name="fitness_center" size="3rem" class="absolute-bottom-right q-mr-md q-mb-md opacity-20" />
+      <div class="col-12 col-sm-6 col-md-3">
+        <q-card class="card-gym animate-fade-in-up" style="animation-delay: 0.1s;">
+          <q-card-section class="text-center">
+            <q-icon name="fitness_center" size="3rem" color="var(--gym-red)" />
+            <div class="text-h4 text-weight-bold text-gym-black q-mt-sm">{{ stats.activeMemberships }}</div>
+            <div class="text-subtitle2 text-gym-red">Membresías Activas</div>
           </q-card-section>
         </q-card>
       </div>
 
-      <div class="col-12 col-md-3">
-        <q-card class="bg-warning text-white">
-          <q-card-section>
-            <div class="text-h6">{{ expiringSoon }}</div>
-            <div class="text-subtitle2">Próximas a Vencer</div>
-            <q-icon name="schedule" size="3rem" class="absolute-bottom-right q-mr-md q-mb-md opacity-20" />
+      <div class="col-12 col-sm-6 col-md-3">
+        <q-card class="card-gym animate-fade-in-up" style="animation-delay: 0.2s;">
+          <q-card-section class="text-center">
+            <q-icon name="point_of_sale" size="3rem" color="var(--gym-red)" />
+            <div class="text-h4 text-weight-bold text-gym-black q-mt-sm">${{ stats.totalSales }}</div>
+            <div class="text-subtitle2 text-gym-red">Ventas del Mes</div>
           </q-card-section>
         </q-card>
       </div>
 
-      <div class="col-12 col-md-3">
-        <q-card class="bg-info text-white">
-          <q-card-section>
-            <div class="text-h6">${{ totalSales }}</div>
-            <div class="text-subtitle2">Ventas del Mes</div>
-            <q-icon name="attach_money" size="3rem" class="absolute-bottom-right q-mr-md q-mb-md opacity-20" />
+      <div class="col-12 col-sm-6 col-md-3">
+        <q-card class="card-gym animate-fade-in-up" style="animation-delay: 0.3s;">
+          <q-card-section class="text-center">
+            <q-icon name="stars" size="3rem" color="var(--gym-red)" />
+            <div class="text-h4 text-weight-bold text-gym-black q-mt-sm">{{ stats.expiringSoon }}</div>
+            <div class="text-subtitle2 text-gym-red">Vencen Pronto</div>
           </q-card-section>
         </q-card>
       </div>
+    </div>
 
-      <!-- Gráfico de Ventas -->
-      <div class="col-12 col-md-8">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Ventas de los Últimos 7 Días</div>
-            <div class="text-subtitle2 text-grey-6">Tendencia de ventas diarias</div>
+    <!-- Gráficos y Tablas -->
+    <div class="row q-gutter-md">
+      <!-- Gráfico de Membresías -->
+      <div class="col-12 col-lg-8">
+        <q-card class="card-gym">
+          <q-card-section class="header-gym">
+            <div class="text-h6 text-gym-white">
+              <q-icon name="analytics" class="q-mr-sm" />
+              Membresías por Tipo
+            </div>
           </q-card-section>
           <q-card-section>
             <div class="text-center q-pa-lg">
-              <q-icon name="insert_chart" size="5rem" color="primary" />
-              <div class="text-grey-6 q-mt-sm">Gráfico de Ventas</div>
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <!-- Membresías por Tipo -->
-      <div class="col-12 col-md-4">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Membresías por Tipo</div>
-            <div class="text-subtitle2 text-grey-6">Distribución actual</div>
-          </q-card-section>
-          <q-card-section>
-            <div class="q-gutter-y-sm">
-              <div v-for="type in membershipTypes" :key="type.id" class="row items-center">
-                <div class="col-8">
-                  <div class="text-body2">{{ type.name }}</div>
-                  <div class="text-caption text-grey-6">{{ type.count }} clientes</div>
-                </div>
-                <div class="col-4 text-right">
-                  <q-badge :color="getMembershipColor(type.name)" :label="type.percentage + '%'" />
-                </div>
-              </div>
+              <q-icon name="insert_chart" size="8rem" color="var(--gym-border-color)" />
+              <div class="text-h6 text-gym-black q-mt-md">Gráfico de Membresías</div>
+              <div class="text-caption text-gym-red">Próximamente: Gráficos interactivos</div>
             </div>
           </q-card-section>
         </q-card>
       </div>
 
       <!-- Actividad Reciente -->
-      <div class="col-12 col-md-6">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Actividad Reciente</div>
-            <div class="text-subtitle2 text-grey-6">Últimas acciones del sistema</div>
+      <div class="col-12 col-lg-4">
+        <q-card class="card-gym">
+          <q-card-section class="header-gym">
+            <div class="text-h6 text-gym-white">
+              <q-icon name="schedule" class="q-mr-sm" />
+              Actividad Reciente
+            </div>
           </q-card-section>
           <q-card-section>
             <q-list>
-              <q-item v-for="activity in recentActivities" :key="activity.id">
+              <q-item v-for="(activity, index) in recentActivity" :key="index" class="q-pa-none q-mb-sm">
                 <q-item-section avatar>
-                  <q-avatar :color="activity.color" text-color="white">
+                  <q-avatar :color="activity.color" text-color="white" size="sm">
                     <q-icon :name="activity.icon" />
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label>{{ activity.title }}</q-item-label>
-                  <q-item-label caption>{{ activity.description }}</q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-item-label caption>{{ activity.time }}</q-item-label>
+                  <q-item-label class="text-gym-black">{{ activity.title }}</q-item-label>
+                  <q-item-label caption class="text-gym-red">{{ activity.time }}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
           </q-card-section>
         </q-card>
       </div>
+    </div>
 
-      <!-- Productos con Stock Bajo -->
-      <div class="col-12 col-md-6">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Stock Bajo</div>
-            <div class="text-subtitle2 text-grey-6">Productos que necesitan reposición</div>
+    <!-- Tabla de Clientes Recientes -->
+    <div class="row q-mt-lg">
+      <div class="col-12">
+        <q-card class="card-gym">
+          <q-card-section class="header-gym">
+            <div class="text-h6 text-gym-white">
+              <q-icon name="people" class="q-mr-sm" />
+              Clientes Recientes
+            </div>
           </q-card-section>
           <q-card-section>
-            <q-list>
-              <q-item v-for="product in lowStockProducts" :key="product.id">
-                <q-item-section avatar>
-                  <q-avatar color="warning" text-color="white">
-                    <q-icon name="warning" />
-                  </q-avatar>
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>{{ product.name }}</q-item-label>
-                  <q-item-label caption>Stock: {{ product.stock }} unidades</q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-btn flat round color="primary" icon="add" size="sm" />
-                </q-item-section>
-              </q-item>
-            </q-list>
+            <q-table
+              :rows="recentClients"
+              :columns="clientColumns"
+              row-key="id"
+              :pagination="{ rowsPerPage: 5 }"
+              class="table-gym"
+            >
+              <template v-slot:body-cell-actions="props">
+                <q-td :props="props">
+                  <q-btn
+                    size="sm"
+                    class="btn-gym-secondary"
+                    icon="visibility"
+                    flat
+                    round
+                    @click="viewClient(props.row)"
+                  >
+                    <q-tooltip>Ver Cliente</q-tooltip>
+                  </q-btn>
+                </q-td>
+              </template>
+            </q-table>
           </q-card-section>
         </q-card>
       </div>
@@ -150,106 +144,148 @@
 
 <script>
 import { defineComponent, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
   name: 'DashboardPage',
   setup() {
-    const totalClients = ref(0)
-    const activeMemberships = ref(0)
-    const expiringSoon = ref(0)
-    const totalSales = ref(0)
-    const membershipTypes = ref([])
-    const recentActivities = ref([])
-    const lowStockProducts = ref([])
+    const router = useRouter()
+    
+    // Estadísticas del dashboard
+    const stats = ref({
+      totalClients: 156,
+      activeMemberships: 142,
+      totalSales: '12,450',
+      expiringSoon: 8
+    })
 
-    const getMembershipColor = (name) => {
-      const colors = {
-        'Diaria': 'blue',
-        'Semanal': 'green',
-        'Mensual': 'orange',
-        'Anual': 'purple'
+    // Actividad reciente
+    const recentActivity = ref([
+      {
+        icon: 'person_add',
+        title: 'Nuevo cliente registrado',
+        time: 'Hace 5 minutos',
+        color: 'var(--gym-success)'
+      },
+      {
+        icon: 'fitness_center',
+        title: 'Membresía renovada',
+        time: 'Hace 15 minutos',
+        color: 'var(--gym-info)'
+      },
+      {
+        icon: 'point_of_sale',
+        title: 'Venta realizada',
+        time: 'Hace 1 hora',
+        color: 'var(--gym-warning)'
+      },
+      {
+        icon: 'stars',
+        title: 'Puntos de lealtad otorgados',
+        time: 'Hace 2 horas',
+        color: 'var(--gym-red)'
       }
-      return colors[name] || 'grey'
+    ])
+
+    // Clientes recientes
+    const recentClients = ref([
+      {
+        id: 1,
+        name: 'Carlos López',
+        email: 'carlos@email.com',
+        membership: 'Mensual',
+        status: 'Activo'
+      },
+      {
+        id: 2,
+        name: 'Ana García',
+        email: 'ana@email.com',
+        membership: 'Anual',
+        status: 'Activo'
+      },
+      {
+        id: 3,
+        name: 'Luis Rodríguez',
+        email: 'luis@email.com',
+        membership: 'Semanal',
+        status: 'Activo'
+      }
+    ])
+
+    // Columnas de la tabla
+    const clientColumns = [
+      {
+        name: 'name',
+        label: 'Nombre',
+        field: 'name',
+        align: 'left'
+      },
+      {
+        name: 'email',
+        label: 'Email',
+        field: 'email',
+        align: 'left'
+      },
+      {
+        name: 'membership',
+        label: 'Membresía',
+        field: 'membership',
+        align: 'center'
+      },
+      {
+        name: 'status',
+        label: 'Estado',
+        field: 'status',
+        align: 'center'
+      },
+      {
+        name: 'actions',
+        label: 'Acciones',
+        align: 'center'
+      }
+    ]
+
+    // Métodos
+    const refreshData = () => {
+      // Aquí se actualizarían los datos del dashboard
+      console.log('Actualizando datos del dashboard...')
     }
 
-    const loadDashboardData = async () => {
-      try {
-        // Aquí se cargarían los datos reales desde la API
-        // Por ahora usamos datos de ejemplo
-        totalClients.value = 156
-        activeMemberships.value = 142
-        expiringSoon.value = 8
-        totalSales.value = '24,500'
-        
-        membershipTypes.value = [
-          { id: 1, name: 'Mensual', count: 89, percentage: 63 },
-          { id: 2, name: 'Semanal', count: 32, percentage: 23 },
-          { id: 3, name: 'Anual', count: 15, percentage: 11 },
-          { id: 4, name: 'Diaria', count: 6, percentage: 3 }
-        ]
-
-        recentActivities.value = [
-          {
-            id: 1,
-            title: 'Nueva Membresía',
-            description: 'Juan Pérez renovó su membresía mensual',
-            time: 'Hace 2 horas',
-            icon: 'fitness_center',
-            color: 'positive'
-          },
-          {
-            id: 2,
-            title: 'Venta Realizada',
-            description: 'Se vendieron 2 bebidas energéticas',
-            time: 'Hace 3 horas',
-            icon: 'shopping_cart',
-            color: 'info'
-          },
-          {
-            id: 3,
-            title: 'Cliente Registrado',
-            description: 'María García se registró como nueva cliente',
-            time: 'Hace 5 horas',
-            icon: 'person_add',
-            color: 'primary'
-          }
-        ]
-
-        lowStockProducts.value = [
-          { id: 1, name: 'Agua Mineral', stock: 3 },
-          { id: 2, name: 'Bebida Energética', stock: 2 },
-          { id: 3, name: 'Proteína en Polvo', stock: 1 }
-        ]
-      } catch (error) {
-        console.error('Error cargando datos del dashboard:', error)
-      }
+    const viewClient = (client) => {
+      router.push(`/clients/${client.id}`)
     }
 
     onMounted(() => {
-      loadDashboardData()
+      // Cargar datos iniciales del dashboard
+      console.log('Dashboard montado')
     })
 
     return {
-      totalClients,
-      activeMemberships,
-      expiringSoon,
-      totalSales,
-      membershipTypes,
-      recentActivities,
-      lowStockProducts,
-      getMembershipColor
+      stats,
+      recentActivity,
+      recentClients,
+      clientColumns,
+      refreshData,
+      viewClient
     }
   }
 })
 </script>
 
 <style scoped>
-.q-card {
-  transition: all 0.3s ease;
+/* Estilos específicos del dashboard */
+.card-gym {
+  transition: var(--gym-transition);
 }
 
-.q-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 25px 0 rgba(0, 0, 0, 0.1);
+.card-gym:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--gym-shadow-lg);
 }
+
+/* Animaciones escalonadas */
+.animate-fade-in-up:nth-child(1) { animation-delay: 0s; }
+.animate-fade-in-up:nth-child(2) { animation-delay: 0.1s; }
+.animate-fade-in-up:nth-child(3) { animation-delay: 0.2s; }
+.animate-fade-in-up:nth-child(4) { animation-delay: 0.3s; }
 </style> 

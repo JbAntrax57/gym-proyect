@@ -2,18 +2,18 @@
   <q-page class="q-pa-md">
     <div class="row q-mb-md items-center justify-between">
       <div class="text-h5 text-weight-bold">Gestión de Clientes</div>
-      <q-btn 
-        color="primary" 
-        icon="add" 
-        label="Nuevo Cliente" 
-        @click="openCreateDialog"
-        no-caps
-      />
+             <q-btn 
+         class="btn-gym-primary"
+         icon="add" 
+         label="Nuevo Cliente" 
+         @click="openCreateDialog"
+         no-caps
+       />
     </div>
 
     <!-- Filtros y búsqueda -->
     <div class="row q-mb-md q-gutter-md">
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-6">
         <q-input
           v-model="searchQuery"
           placeholder="Buscar clientes..."
@@ -38,9 +38,9 @@
           </template>
         </q-input>
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-4">
         <q-select
-          v-model="statusFilter"
+          v-model="filters.status"
           :options="statusOptions"
           label="Estado"
           dense
@@ -49,54 +49,121 @@
           @update:model-value="handleSearch"
         />
       </div>
-      <div class="col-12 col-md-3">
-        <q-btn
-          color="secondary"
-          icon="refresh"
-          label="Recargar"
-          @click="loadClients"
-          dense
-          outline
-        />
-      </div>
+
     </div>
 
-    <!-- Tabla de clientes -->
-    <q-card class="shadow-1">
-      <q-table
-        :rows="clients"
-        :columns="columns"
-        :loading="loading"
-        :pagination="pagination"
-        row-key="id"
-        @request="onRequest"
-        :rows-per-page-options="[10, 15, 25, 50]"
-        class="text-sm"
-      >
+         <!-- Tabla de clientes -->
+     <q-card class="card-gym">
+             <q-table
+         :rows="clients"
+         :columns="columns"
+         :loading="loading"
+         row-key="id"
+         v-model:pagination="pagination"
+         :filter="filter"
+         @request="qTableRequest"
+         :rows-per-page-options="[10, 15, 25, 50]"
+         class="text-sm table-gym"
+       >
+                 <!-- Búsqueda en la tabla -->
+         <template v-slot:top>
+           <div style="width: 100%;">
+             <q-input
+               dense
+               debounce="300"
+               v-model="filter"
+               placeholder="Buscar en la tabla..."
+               @update:model-value="v => { filter = v.toUpperCase() }"
+             >
+               <template v-slot:append>
+                 <q-icon name="search" />
+               </template>
+             </q-input>
+           </div>
+         </template>
+
+         <!-- Headers personalizados para columnas específicas -->
+         <template v-slot:header="props">
+           <q-tr :props="props">
+             <q-th
+               v-for="col in props.cols"
+               :key="col.name"
+               :props="props"
+               class="custom-header"
+             >
+               <div class="header-content">
+                 <q-icon 
+                   v-if="col.name === 'name'" 
+                   name="person" 
+                   size="sm" 
+                   class="q-mr-xs"
+                 />
+                 <q-icon 
+                   v-else-if="col.name === 'email'" 
+                   name="email" 
+                   size="sm" 
+                   class="q-mr-xs"
+                 />
+                 <q-icon 
+                   v-else-if="col.name === 'phone'" 
+                   name="phone" 
+                   size="sm" 
+                   class="q-mr-xs"
+                 />
+                 <q-icon 
+                   v-else-if="col.name === 'loyalty_points'" 
+                   name="stars" 
+                   size="sm" 
+                   class="q-mr-xs"
+                 />
+                 <q-icon 
+                   v-else-if="col.name === 'is_active'" 
+                   name="check_circle" 
+                   size="sm" 
+                   class="q-mr-xs"
+                 />
+                 <q-icon 
+                   v-else-if="col.name === 'created_at'" 
+                   name="schedule" 
+                   size="sm" 
+                   class="q-mr-xs"
+                 />
+                 <q-icon 
+                   v-else-if="col.name === 'actions'" 
+                   name="settings" 
+                   size="sm" 
+                   class="q-mr-xs"
+                 />
+                 {{ col.label }}
+               </div>
+             </q-th>
+           </q-tr>
+         </template>
+
         <!-- Columna de acciones -->
         <template v-slot:body-cell-actions="props">
           <q-td :props="props">
             <div class="row q-gutter-xs">
-              <q-btn
-                size="sm"
-                color="info"
-                icon="edit"
-                @click="openEditDialog(props.row)"
-                flat
-                round
-              >
-                <q-tooltip>Editar</q-tooltip>
-              </q-btn>
-              <q-btn
-                size="sm"
-                color="negative"
-                icon="delete"
-                @click="confirmDelete(props.row)"
-                flat
-                round
-              >
-                <q-tooltip>Eliminar</q-tooltip>
-              </q-btn>
+                             <q-btn
+                 size="sm"
+                 class="btn-gym-secondary"
+                 icon="edit"
+                 @click="openEditDialog(props.row)"
+                 flat
+                 round
+               >
+                 <q-tooltip>Editar</q-tooltip>
+               </q-btn>
+               <q-btn
+                 size="sm"
+                 class="btn-gym-primary"
+                 icon="delete"
+                 @click="confirmDelete(props.row)"
+                 flat
+                 round
+               >
+                 <q-tooltip>Eliminar</q-tooltip>
+               </q-btn>
             </div>
           </q-td>
         </template>
@@ -136,137 +203,253 @@
           </div>
         </template>
       </q-table>
-      
-      <!-- Información de paginación -->
-      <div class="row q-mt-md q-gutter-md items-center justify-between" v-if="clients.length > 0">
-        <div class="col-12 col-md-6">
-          <q-chip
-            color="info"
-            text-color="white"
-            :label="`Mostrando ${clients.length} de ${pagination.rowsNumber} clientes`"
-            size="sm"
-          />
-        </div>
-        <div class="col-12 col-md-6 text-right">
-          <q-chip
-            color="secondary"
-            text-color="white"
-            :label="`Página ${pagination.page} de ${Math.ceil(pagination.rowsNumber / pagination.rowsPerPage)}`"
-            size="sm"
-          />
-        </div>
-      </div>
     </q-card>
 
-    <!-- Modal para crear/editar cliente -->
-    <q-dialog v-model="showDialog" persistent>
-      <q-card style="min-width: 500px">
-        <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">{{ isEditing ? 'Editar Cliente' : 'Nuevo Cliente' }}</div>
-          <q-space />
-          <q-btn icon="close" flat round dense @click="closeDialog" />
-        </q-card-section>
+              <!-- Modal para crear/editar cliente -->
+     <q-dialog v-model="showDialog" persistent>
+       <q-card style="min-width: 600px" class="modal-gym-enhanced">
+         <!-- Header del modal con colores del gym -->
+         <q-card-section class="modal-header-gym q-pa-md">
+           <div class="row items-center full-width">
+             <div class="col">
+               <div class="text-h5 text-gym-white text-weight-bold">
+                 <q-icon 
+                   :name="isEditing ? 'edit' : 'person_add'" 
+                   size="2rem" 
+                   class="q-mr-md" 
+                 />
+                 {{ isEditing ? 'Editar Cliente' : 'Nuevo Cliente' }}
+               </div>
+               <div class="text-subtitle2 text-gym-text-secondary q-mt-xs">
+                 {{ isEditing ? 'Modifica la información del cliente' : 'Completa los datos del nuevo cliente' }}
+               </div>
+             </div>
+             <div class="col-auto">
+               <q-btn 
+                 icon="close" 
+                 flat 
+                 round 
+                 dense 
+                 @click="closeDialog"
+                 class="text-gym-white"
+                 size="lg"
+               />
+             </div>
+           </div>
+         </q-card-section>
 
-        <q-card-section>
-          <q-form @submit="handleSubmit" class="q-gutter-md">
-            <div class="row q-gutter-md">
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model="form.name"
-                  label="Nombre completo *"
-                  outlined
-                  dense
-                  :rules="[val => !!val || 'El nombre es requerido']"
-                />
-              </div>
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model="form.email"
-                  label="Email *"
-                  type="email"
-                  outlined
-                  dense
-                  :rules="[
-                    val => !!val || 'El email es requerido',
-                    val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) || 'Email inválido'
-                  ]"
-                />
-              </div>
-            </div>
+         <!-- Contenido del modal -->
+         <q-card-section class="q-pa-lg">
+           <q-form @submit="handleSubmit" class="q-gutter-lg">
+             <!-- Nombre completo -->
+             <div class="row">
+               <div class="col-12">
+                 <q-input
+                   v-model="form.name"
+                   label="Nombre completo *"
+                   outlined
+                   dense
+                   class="input-gym-enhanced"
+                   :rules="[val => !!val || 'El nombre es requerido']"
+                   @blur="formatName"
+                   hint="Se convertirá a mayúsculas automáticamente"
+                   persistent-hint
+                 >
+                   <template v-slot:prepend>
+                     <q-icon name="person" color="var(--gym-red)" />
+                   </template>
+                 </q-input>
+               </div>
+             </div>
 
-            <div class="row q-gutter-md">
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model="form.phone"
-                  label="Teléfono *"
-                  outlined
-                  dense
-                  :rules="[val => !!val || 'El teléfono es requerido']"
-                />
-              </div>
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model="form.address"
-                  label="Dirección"
-                  outlined
-                  dense
-                />
-              </div>
-            </div>
+             <!-- Email -->
+             <div class="row">
+               <div class="col-12">
+                 <q-input
+                   v-model="form.email"
+                   label="Email *"
+                   type="email"
+                   outlined
+                   dense
+                   class="input-gym-enhanced"
+                   :rules="[
+                     val => !!val || 'El email es requerido',
+                     val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) || 'Email inválido'
+                   ]"
+                 >
+                   <template v-slot:prepend>
+                     <q-icon name="email" color="var(--gym-red)" />
+                   </template>
+                 </q-input>
+               </div>
+             </div>
 
-            <div class="row q-gutter-md">
-              <div class="col-12 col-md-6">
-                <q-toggle
-                  v-model="form.is_active"
-                  label="Cliente activo"
-                  color="positive"
-                />
-              </div>
-              <div class="col-12 col-md-6">
-                <q-input
-                  v-model.number="form.loyalty_points"
-                  label="Puntos de lealtad"
-                  type="number"
-                  outlined
-                  dense
-                  min="0"
-                />
-              </div>
-            </div>
+             <!-- Teléfono -->
+             <div class="row">
+               <div class="col-12">
+                 <q-input
+                   v-model="form.phone"
+                   label="Teléfono *"
+                   outlined
+                   dense
+                   class="input-gym-enhanced"
+                   :rules="[val => !!val || 'El teléfono es requerido']"
+                   mask="(###) ###-####"
+                   hint="Formato: (123) 456-7890"
+                   persistent-hint
+                 >
+                   <template v-slot:prepend>
+                     <q-icon name="phone" color="var(--gym-red)" />
+                   </template>
+                 </q-input>
+               </div>
+             </div>
 
-            <div class="row justify-end q-gutter-sm">
-              <q-btn
-                label="Cancelar"
-                color="grey"
-                flat
-                @click="closeDialog"
-              />
-              <q-btn
-                :label="isEditing ? 'Actualizar' : 'Crear'"
-                type="submit"
-                color="primary"
-                :loading="submitting"
-              />
-            </div>
-          </q-form>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
+             <!-- Dirección -->
+             <div class="row">
+               <div class="col-12">
+                 <q-input
+                   v-model="form.address"
+                   label="Dirección"
+                   outlined
+                   dense
+                   class="input-gym-enhanced"
+                   @blur="formatAddress"
+                   hint="Se convertirá a mayúsculas automáticamente"
+                   persistent-hint
+                 >
+                   <template v-slot:prepend>
+                     <q-icon name="location_on" color="var(--gym-red)" />
+                   </template>
+                 </q-input>
+               </div>
+             </div>
 
-    <!-- Modal de confirmación para eliminar -->
-    <q-dialog v-model="showDeleteDialog">
-      <q-card>
-        <q-card-section class="row items-center">
-          <q-avatar icon="warning" color="warning" text-color="white" />
-          <span class="q-ml-sm">¿Estás seguro de que quieres eliminar este cliente?</span>
-        </q-card-section>
+             <!-- Estado y Puntos de Lealtad -->
+             <div class="row q-gutter-md">
+               <div class="col-12 col-md-6">
+                 <div class="text-subtitle2 text-gym-black q-mb-sm">Estado del Cliente</div>
+                 <q-toggle
+                   v-model="form.is_active"
+                   :label="form.is_active ? 'Cliente Activo' : 'Cliente Inactivo'"
+                   :color="form.is_active ? 'positive' : 'negative'"
+                   size="lg"
+                   class="toggle-gym"
+                 />
+               </div>
+               <div class="col-12 col-md-6">
+                 <q-input
+                   v-model.number="form.loyalty_points"
+                   label="Puntos de lealtad"
+                   type="number"
+                   outlined
+                   dense
+                   class="input-gym-enhanced"
+                   min="0"
+                   hint="Puntos acumulados por el cliente"
+                   persistent-hint
+                 >
+                   <template v-slot:prepend>
+                     <q-icon name="stars" color="var(--gym-red)" />
+                   </template>
+                   <template v-slot:append>
+                     <q-icon name="emoji_events" color="var(--gym-warning)" />
+                   </template>
+                 </q-input>
+               </div>
+             </div>
 
-        <q-card-actions align="right">
-          <q-btn flat label="Cancelar" color="grey" v-close-popup />
-          <q-btn flat label="Eliminar" color="negative" @click="deleteClient" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+             <!-- Botones de acción -->
+             <div class="row justify-end q-gutter-md q-mt-lg">
+               <q-btn
+                 label="Cancelar"
+                 class="btn-gym-secondary"
+                 flat
+                 @click="closeDialog"
+                 size="lg"
+               />
+               <q-btn
+                 :label="isEditing ? 'Actualizar Cliente' : 'Crear Cliente'"
+                 type="submit"
+                 class="btn-gym-primary"
+                 :loading="submitting"
+                 size="lg"
+                 :icon="isEditing ? 'update' : 'add'"
+               />
+             </div>
+           </q-form>
+         </q-card-section>
+       </q-card>
+     </q-dialog>
+
+         <!-- Modal de confirmación para eliminar -->
+     <q-dialog v-model="showDeleteDialog">
+       <q-card class="modal-gym-enhanced delete-confirmation-modal">
+         <q-card-section class="modal-header-gym q-pa-md">
+           <div class="row items-center full-width">
+             <div class="col">
+               <div class="text-h5 text-gym-white text-weight-bold">
+                 <q-icon name="warning" size="2rem" class="q-mr-md" />
+                 Confirmar Eliminación
+               </div>
+               <div class="text-subtitle2 text-gym-text-secondary q-mt-xs">
+                 Esta acción no se puede deshacer
+               </div>
+             </div>
+           </div>
+         </q-card-section>
+
+         <q-card-section class="q-pa-lg">
+           <div class="row items-center q-mb-lg">
+             <div class="col-auto">
+               <q-avatar 
+                 icon="person" 
+                 color="var(--gym-red)" 
+                 text-color="white" 
+                 size="4rem"
+                 class="q-mr-md"
+               />
+             </div>
+             <div class="col">
+               <div class="text-h6 text-gym-black">
+                 ¿Eliminar a <strong>{{ selectedClient?.name }}</strong>?
+               </div>
+               <div class="text-body2 text-gym-red q-mt-xs">
+                 Se eliminarán todos los datos asociados a este cliente
+               </div>
+             </div>
+           </div>
+
+           <div class="row q-gutter-md">
+             <div class="col-12 col-md-6">
+               <div class="text-caption text-gym-black q-mb-xs">Email:</div>
+               <div class="text-body1">{{ selectedClient?.email }}</div>
+             </div>
+             <div class="col-12 col-md-6">
+               <div class="text-caption text-gym-black q-mb-xs">Teléfono:</div>
+               <div class="text-body1">{{ selectedClient?.phone }}</div>
+             </div>
+           </div>
+         </q-card-section>
+
+         <q-card-actions align="right" class="q-pa-lg q-pt-none">
+           <q-btn 
+             label="Cancelar" 
+             class="btn-gym-secondary" 
+             flat 
+             v-close-popup 
+             size="lg"
+           />
+           <q-btn 
+             label="Eliminar Cliente" 
+             class="btn-gym-primary" 
+             @click="deleteClient" 
+             size="lg"
+             icon="delete_forever"
+           />
+         </q-card-actions>
+       </q-card>
+     </q-dialog>
   </q-page>
 </template>
 
@@ -289,17 +472,22 @@ export default defineComponent({
     const showDeleteDialog = ref(false)
     const isEditing = ref(false)
     const searchQuery = ref('')
-    const statusFilter = ref(null)
+    const filter = ref('')
     const selectedClient = ref(null)
     
-    // Paginación
+    // Paginación simplificada
     const pagination = ref({
       sortBy: 'name',
       descending: false,
       page: 1,
       rowsPerPage: 15,
-      rowsNumber: 0,
-      rowsPerPageOptions: [10, 15, 25, 50]
+      rowsNumber: 0
+    })
+
+    // Filtros consolidados
+    const filters = ref({
+      status: null,
+      search: ''
     })
 
     // Formulario
@@ -374,168 +562,99 @@ export default defineComponent({
 
     // Función para mostrar notificaciones
     const showNotification = (message, type = 'positive', icon = 'check_circle') => {
-      console.log('🔔 ClientsPage - Intentando mostrar notificación:', { message, type, icon })
-      
       try {
-        // Intentar diferentes formas de usar Notify en Quasar v2
-        if (typeof Notify === 'function') {
-          // Forma 1: Notify directo
-          Notify({
-            type: type,
-            message: message,
-            icon: icon,
-            position: 'top-right',
-            timeout: 3000
-          })
-        } else if (Notify && typeof Notify.create === 'function') {
-          // Forma 2: Notify.create (Quasar v1)
-          Notify.create({
-            type: type,
-            message: message,
-            icon: icon,
-            position: 'top-right',
-            timeout: 3000
-          })
-        } else if ($q && $q.notify) {
-          // Forma 3: $q.notify
-          $q.notify({
-            type: type,
-            message: message,
-            icon: icon,
-            position: 'top-right',
-            timeout: 3000
-          })
-        } else {
-          throw new Error('Notify no disponible')
-        }
-        
-        console.log('✅ ClientsPage - Notificación creada exitosamente')
+        Notify({
+          type: type,
+          message: message,
+          icon: icon,
+          position: 'top-right',
+          timeout: 3000
+        })
       } catch (error) {
-        console.error('❌ ClientsPage - Error al crear notificación:', error)
-        // Fallback: usar alert si Notify falla
+        console.error('Error al crear notificación:', error)
         alert(`${type.toUpperCase()}: ${message}`)
       }
     }
 
-    // Métodos
-    const loadClients = async () => {
+    // Métodos principales
+    const fetchFromServer = () => {
+      qTableRequest({
+        pagination: pagination.value,
+        filter: filter.value
+      })
+    }
+
+    const qTableRequest = async (props) => {
       try {
-        console.log('🔄 ClientsPage - INICIANDO loadClients...')
         loading.value = true
-        const filters = {}
         
-        if (statusFilter.value !== null) {
-          filters.is_active = statusFilter.value
+        // Actualizar paginación local
+        pagination.value = props.pagination
+        filter.value = props.filter
+        
+        // Preparar parámetros
+        const params = { 
+          ...filters.value,
+          filter: props.filter,
+          pagination: props.pagination
         }
         
+        // Aplicar filtros de estado
+        if (filters.value.status !== null) {
+          params.is_active = filters.value.status
+        }
+        
+        // Aplicar búsqueda general
         if (searchQuery.value.trim()) {
-          filters.search = searchQuery.value.trim()
+          params.search = searchQuery.value.trim()
         }
         
-        console.log('🔄 ClientsPage - Iniciando carga de clientes...')
-        console.log('🔍 ClientsPage - Filtros aplicados:', filters)
-        console.log('📄 ClientsPage - Página actual:', pagination.value.page)
-        console.log('📊 ClientsPage - Filas por página:', pagination.value.rowsPerPage)
+        console.log('🔍 Parámetros de búsqueda:', params)
         
         const response = await clientService.getClients(
           pagination.value.page,
           pagination.value.rowsPerPage,
-          filters,
+          params,
           pagination.value.sortBy,
           pagination.value.descending
         )
         
-        console.log('📡 ClientsPage - Respuesta del servicio:', response)
-        
-        // La nueva respuesta de Laravel tiene esta estructura:
-        // response = {
-        //   success: true,
-        //   data: [...], // Los clientes directamente
-        //   pagination: {
-        //     current_page: 1,
-        //     per_page: 15,
-        //     total: 10,
-        //     last_page: 1,
-        //     from: 1,
-        //     to: 10,
-        //     rowCount: 10
-        //   },
-        //   message: "..."
-        // }
+        console.log('📡 Respuesta del servicio:', response)
         
         if (response && response.success && response.data) {
-          // Los clientes ahora vienen directamente en data
-          const clientsData = response.data || []
-          const paginationData = response.pagination
+          // Los clientes vienen directamente en data
+          clients.value = response.data || []
           
-          console.log('👥 ClientsPage - Clientes extraídos:', clientsData)
-          console.log('📊 ClientsPage - Datos de paginación:', paginationData)
-          
-          // Asegurar que clients sea siempre un array
-          if (Array.isArray(clientsData)) {
-            clients.value = clientsData
-            console.log('✅ ClientsPage - Clientes asignados correctamente:', clients.value.length)
-          } else {
-            console.warn('⚠️ ClientsPage - Los datos no son un array:', clientsData)
-            clients.value = []
-          }
-          
-          // Actualizar paginación usando rowCount del backend
-          if (paginationData && paginationData.rowCount !== undefined) {
-            pagination.value = {
-              ...pagination.value,
-              rowsNumber: paginationData.rowCount,
-              page: paginationData.current_page || 1,
-              rowsPerPage: paginationData.per_page || 15
-            }
-            console.log('📄 ClientsPage - Paginación actualizada con rowCount:', pagination.value)
+          // Actualizar paginación usando rowCounts del backend
+          if (response.pagination && response.pagination.rowCounts !== undefined) {
+            pagination.value.rowsNumber = response.pagination.rowCounts
+            console.log('📊 Paginación actualizada con rowCounts:', pagination.value)
           }
         } else {
-          console.warn('⚠️ ClientsPage - Respuesta inesperada:', response)
           clients.value = []
         }
         
       } catch (error) {
-        console.error('❌ ClientsPage - Error loading clients:', error)
-        clients.value = [] // Asegurar que sea un array vacío en caso de error
+        console.error('❌ Error loading clients:', error)
+        clients.value = []
         showNotification('Error al cargar los clientes', 'negative', 'error')
       } finally {
         loading.value = false
-        console.log('🏁 ClientsPage - loadClients COMPLETADO. Total de clientes:', clients.value.length)
       }
     }
 
     const handleSearch = () => {
       // Resetear a la primera página cuando se busca
       pagination.value.page = 1
-      console.log('🔍 ClientsPage - Búsqueda iniciada:', searchQuery.value)
-      loadClients()
+      fetchFromServer()
     }
 
-    // Función para limpiar búsqueda
     const clearSearch = () => {
       searchQuery.value = ''
+      filter.value = ''
+      filters.value.status = null
       pagination.value.page = 1
-      console.log('🧹 ClientsPage - Búsqueda limpiada')
-      loadClients()
-    }
-
-    const onRequest = (props) => {
-      console.log('📄 ClientsPage - onRequest llamado con:', props.pagination)
-      
-      // Actualizar la paginación local
-      pagination.value = {
-        ...pagination.value,
-        page: props.pagination.page,
-        rowsPerPage: props.pagination.rowsPerPage,
-        sortBy: props.pagination.sortBy,
-        descending: props.pagination.descending
-      }
-      
-      console.log('📄 ClientsPage - Paginación actualizada:', pagination.value)
-      
-      // Cargar clientes con la nueva paginación
-      loadClients()
+      fetchFromServer()
     }
 
     const openCreateDialog = () => {
@@ -565,40 +684,22 @@ export default defineComponent({
 
     const handleSubmit = async () => {
       try {
-        console.log('🚀 ClientsPage - Iniciando envío del formulario...')
         submitting.value = true
         
         if (isEditing.value) {
-          console.log('✏️ ClientsPage - Actualizando cliente:', selectedClient.value.id)
           const updateResponse = await clientService.updateClient(selectedClient.value.id, form.value)
-          console.log('✅ ClientsPage - Cliente actualizado:', updateResponse)
-          
-          // Mostrar notificación
           showNotification('Cliente actualizado exitosamente', 'positive', 'check_circle')
-          console.log('🔔 ClientsPage - Notificación de éxito mostrada')
         } else {
-          console.log('➕ ClientsPage - Creando nuevo cliente')
           const createResponse = await clientService.createClient(form.value)
-          console.log('✅ ClientsPage - Cliente creado:', createResponse)
-          
-          // Mostrar notificación
           showNotification('Cliente creado exitosamente', 'positive', 'check_circle')
-          console.log('🔔 ClientsPage - Notificación de éxito mostrada')
         }
         
-        console.log('✅ ClientsPage - Operación exitosa, cerrando modal...')
-        
-        // Cerrar modal usando la función específica
-        closeDialogWithDelay()
-        console.log('🔒 ClientsPage - Modal cerrado usando closeDialog')
-        
-        // Recargar lista de clientes
-        console.log('🔄 ClientsPage - Recargando lista de clientes...')
-        await loadClients()
-        console.log('✅ ClientsPage - Lista recargada exitosamente')
+        // Cerrar modal y recargar datos
+        closeDialog()
+        await fetchFromServer()
         
       } catch (error) {
-        console.error('❌ ClientsPage - Error saving client:', error)
+        console.error('Error saving client:', error)
         showNotification(
           error.response?.data?.message || 'Error al guardar el cliente', 
           'negative', 
@@ -606,7 +707,6 @@ export default defineComponent({
         )
       } finally {
         submitting.value = false
-        console.log('🏁 ClientsPage - Proceso de envío completado')
       }
     }
 
@@ -618,39 +718,39 @@ export default defineComponent({
     const deleteClient = async () => {
       try {
         await clientService.deleteClient(selectedClient.value.id)
-        
         showNotification('Cliente eliminado exitosamente', 'positive', 'check_circle')
-        
         showDeleteDialog.value = false
         selectedClient.value = null
-        await loadClients()
-        
+        await fetchFromServer()
       } catch (error) {
         console.error('Error deleting client:', error)
         showNotification('Error al eliminar el cliente', 'negative', 'error')
       }
     }
 
-    const closeDialog = () => {
-      console.log('🔒 ClientsPage - Ejecutando closeDialog...')
-      showDialog.value = false
-      resetForm()
-      selectedClient.value = null
-      console.log('✅ ClientsPage - closeDialog ejecutado correctamente')
-    }
+         // Función para formatear nombre a mayúsculas
+     const formatName = () => {
+       if (form.value.name) {
+         form.value.name = form.value.name.toUpperCase()
+       }
+     }
 
-    const closeDialogWithDelay = () => {
-      console.log('⏳ ClientsPage - Cerrando modal con delay...')
-      // Delay más largo para asegurar que la notificación se muestre
-      setTimeout(() => {
-        console.log('🔒 ClientsPage - Ejecutando cierre del modal...')
-        closeDialog()
-      }, 1000) // Aumentado a 1 segundo
-    }
+     // Función para formatear dirección a mayúsculas
+     const formatAddress = () => {
+       if (form.value.address) {
+         form.value.address = form.value.address.toUpperCase()
+       }
+     }
+
+     const closeDialog = () => {
+       showDialog.value = false
+       resetForm()
+       selectedClient.value = null
+     }
 
     // Cargar datos al montar el componente
     onMounted(() => {
-      loadClients()
+      fetchFromServer()
     })
 
     return {
@@ -662,37 +762,339 @@ export default defineComponent({
       showDeleteDialog,
       isEditing,
       searchQuery,
-      statusFilter,
+      filter,
+      filters,
       selectedClient,
       pagination,
       form,
       statusOptions,
       columns,
       
-      // Métodos
-      loadClients,
-      handleSearch,
-      clearSearch,
-      onRequest,
-      openCreateDialog,
-      openEditDialog,
-      resetForm,
-      handleSubmit,
-      confirmDelete,
-      deleteClient,
-      closeDialog,
-      closeDialogWithDelay
+             // Métodos
+       fetchFromServer,
+       qTableRequest,
+       handleSearch,
+       clearSearch,
+       openCreateDialog,
+       openEditDialog,
+       resetForm,
+       handleSubmit,
+       confirmDelete,
+       deleteClient,
+       closeDialog,
+       formatName,
+       formatAddress
     }
   }
 })
 </script>
 
 <style scoped>
-.q-table {
-  background: white;
+/* Estilos específicos de la página de clientes usando el tema global del gym */
+
+/* Personalización del header de la tabla usando variables globales */
+.q-table thead th {
+  background: var(--gym-gradient-black) !important;
+  color: var(--gym-text-primary) !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border: none !important;
+  box-shadow: var(--gym-shadow-sm) !important;
 }
 
-.q-card {
-  box-shadow: 0 4px 25px 0 rgba(0, 0, 0, 0.1);
+/* Hover en el header - Cambia a rojo */
+.q-table thead th:hover {
+  background: var(--gym-gradient-red) !important;
+  transition: var(--gym-transition);
+  transform: translateY(-1px) !important;
+  box-shadow: var(--gym-shadow-red) !important;
 }
+
+/* Estilo para las columnas ordenables */
+.q-table thead th.sortable {
+  cursor: pointer;
+}
+
+.q-table thead th.sortable:hover {
+  background: var(--gym-gradient-red) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Estilos para headers personalizados usando variables globales */
+.custom-header {
+  background: var(--gym-gradient-black) !important;
+  color: var(--gym-text-primary) !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+  padding: var(--gym-spacing-md) var(--gym-spacing-sm) !important;
+  box-shadow: var(--gym-shadow-sm) !important;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gym-spacing-xs);
+}
+
+/* Hover en headers personalizados - Cambia a rojo */
+.custom-header:hover {
+  background: var(--gym-gradient-red) !important;
+  transition: var(--gym-transition);
+  transform: translateY(-1px) !important;
+  box-shadow: var(--gym-shadow-red) !important;
+}
+
+/* Estilos específicos para diferentes tipos de columnas */
+.custom-header:has(.q-icon[name="person"]),
+.custom-header:has(.q-icon[name="phone"]),
+.custom-header:has(.q-icon[name="check_circle"]),
+.custom-header:has(.q-icon[name="settings"]) {
+  background: var(--gym-gradient-black) !important;
+}
+
+.custom-header:has(.q-icon[name="email"]),
+.custom-header:has(.q-icon[name="stars"]),
+.custom-header:has(.q-icon[name="schedule"]) {
+  background: var(--gym-gradient-black-light) !important;
+}
+
+/* Hover específico para cada tipo de columna - Cambia a rojo */
+.custom-header:has(.q-icon[name="person"]):hover,
+.custom-header:has(.q-icon[name="email"]):hover,
+.custom-header:has(.q-icon[name="phone"]):hover,
+.custom-header:has(.q-icon[name="stars"]):hover,
+.custom-header:has(.q-icon[name="check_circle"]):hover,
+.custom-header:has(.q-icon[name="schedule"]):hover,
+.custom-header:has(.q-icon[name="settings"]):hover {
+  background: var(--gym-gradient-red) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--gym-shadow-red) !important;
+}
+
+/* Efectos adicionales para el tema Gym */
+.q-table {
+  border-radius: var(--gym-radius-md) !important;
+  overflow: hidden !important;
+}
+
+/* Separadores entre columnas con tema gym */
+.q-table thead th:not(:last-child) {
+  border-right: 1px solid var(--gym-border-color) !important;
+}
+
+/* Iconos de ordenamiento con tema gym */
+.q-table thead th .q-icon {
+  color: var(--gym-red) !important;
+  opacity: 0.8;
+}
+
+/* Bordes del header con tema gym */
+.q-table thead th:first-child {
+  border-top-left-radius: var(--gym-radius-md);
+}
+
+.q-table thead th:last-child {
+  border-top-right-radius: var(--gym-radius-md);
+}
+
+/* Animación de entrada para los headers */
+.custom-header {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos específicos para los filtros */
+.q-input, .q-select {
+  transition: var(--gym-transition);
+}
+
+.q-input:focus, .q-select:focus {
+  border-color: var(--gym-red) !important;
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1) !important;
+}
+
+ /* Estilos para los chips de estado */
+ .q-chip {
+   font-weight: 600;
+   transition: var(--gym-transition);
+ }
+
+ .q-chip:hover {
+   transform: scale(1.05);
+ }
+
+ /* ========================================
+    ESTILOS DEL MODAL MEJORADO
+    ======================================== */
+
+ /* Modal mejorado del gym */
+ .modal-gym-enhanced {
+   border: 3px solid var(--gym-red) !important;
+   border-radius: var(--gym-radius-lg) !important;
+   box-shadow: var(--gym-shadow-lg) !important;
+   overflow: hidden !important;
+ }
+
+ /* Header del modal con colores del gym */
+ .modal-header-gym {
+   background: var(--gym-gradient-black) !important;
+   color: var(--gym-text-primary) !important;
+   border-bottom: 3px solid var(--gym-red) !important;
+   position: relative !important;
+ }
+
+ .modal-header-gym::after {
+   content: '' !important;
+   position: absolute !important;
+   bottom: 0 !important;
+   left: 0 !important;
+   right: 0 !important;
+   height: 2px !important;
+   background: linear-gradient(90deg, var(--gym-red) 0%, var(--gym-red-light) 50%, var(--gym-red) 100%) !important;
+   animation: shimmer 2s infinite !important;
+ }
+
+ @keyframes shimmer {
+   0% { transform: translateX(-100%); }
+   100% { transform: translateX(100%); }
+ }
+
+ /* Inputs mejorados del gym */
+ .input-gym-enhanced {
+   background: rgba(211, 47, 47, 0.05) !important;
+   border: 2px solid var(--gym-border-color) !important;
+   border-radius: var(--gym-radius-md) !important;
+   transition: var(--gym-transition) !important;
+ }
+
+ .input-gym-enhanced:hover {
+   background: rgba(211, 47, 47, 0.08) !important;
+   border-color: var(--gym-red) !important;
+   transform: translateY(-1px) !important;
+   box-shadow: var(--gym-shadow-sm) !important;
+ }
+
+ .input-gym-enhanced:focus-within {
+   background: rgba(211, 47, 47, 0.1) !important;
+   border-color: var(--gym-red) !important;
+   box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15) !important;
+   transform: translateY(-2px) !important;
+ }
+
+ /* Toggle mejorado del gym */
+ .toggle-gym {
+   transition: var(--gym-transition) !important;
+ }
+
+ .toggle-gym:hover {
+   transform: scale(1.05) !important;
+ }
+
+ /* Hints del formulario */
+ .q-field__hint {
+   color: var(--gym-red) !important;
+   font-size: 0.8rem !important;
+   font-style: italic !important;
+ }
+
+ /* Iconos de los inputs */
+ .input-gym-enhanced .q-field__prepend .q-icon {
+   transition: var(--gym-transition) !important;
+ }
+
+ .input-gym-enhanced:hover .q-field__prepend .q-icon {
+   transform: scale(1.1) !important;
+   color: var(--gym-red-dark) !important;
+ }
+
+ /* Botones del modal */
+ .modal-gym-enhanced .btn-gym-primary,
+ .modal-gym-enhanced .btn-gym-secondary {
+   font-weight: 600 !important;
+   letter-spacing: 0.5px !important;
+   text-transform: uppercase !important;
+   transition: var(--gym-transition) !important;
+ }
+
+ .modal-gym-enhanced .btn-gym-primary:hover,
+ .modal-gym-enhanced .btn-gym-secondary:hover {
+   transform: translateY(-3px) !important;
+   box-shadow: var(--gym-shadow-md) !important;
+ }
+
+ /* Animaciones del modal */
+ .modal-gym-enhanced {
+   animation: modalSlideIn 0.4s ease-out !important;
+ }
+
+ @keyframes modalSlideIn {
+   from {
+     opacity: 0;
+     transform: scale(0.9) translateY(-20px);
+   }
+   to {
+     opacity: 1;
+     transform: scale(1) translateY(0);
+   }
+ }
+
+ /* Responsive del modal */
+ @media (max-width: 768px) {
+   .modal-gym-enhanced {
+     min-width: 95vw !important;
+     margin: 10px !important;
+   }
+   
+   .modal-header-gym .text-h5 {
+     font-size: 1.2rem !important;
+   }
+   
+   .modal-header-gym .q-icon {
+     font-size: 1.5rem !important;
+   }
+ }
+
+ /* Modal de confirmación de eliminación */
+ .delete-confirmation-modal {
+   border-color: var(--gym-error) !important;
+   box-shadow: 0 8px 32px rgba(211, 47, 47, 0.3) !important;
+ }
+
+ .delete-confirmation-modal .modal-header-gym {
+   background: linear-gradient(135deg, var(--gym-error) 0%, var(--gym-red-dark) 100%) !important;
+   border-bottom-color: var(--gym-error) !important;
+ }
+
+ .delete-confirmation-modal .modal-header-gym::after {
+   background: linear-gradient(90deg, var(--gym-error) 0%, var(--gym-red) 50%, var(--gym-error) 100%) !important;
+ }
+
+ /* Efectos especiales para el modal de eliminación */
+ .delete-confirmation-modal .q-avatar {
+   animation: pulseWarning 2s infinite !important;
+ }
+
+ @keyframes pulseWarning {
+   0%, 100% {
+     transform: scale(1);
+     box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7);
+   }
+   50% {
+     transform: scale(1.05);
+     box-shadow: 0 0 0 10px rgba(211, 47, 47, 0);
+   }
+ }
 </style> 

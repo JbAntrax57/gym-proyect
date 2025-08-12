@@ -29,7 +29,7 @@ class ClientService {
       //     last_page: 1,
       //     from: 1,
       //     to: 10,
-      //     rowCount: 10
+      //     rowCounts: 10
       //   },
       //   message: "..."
       // }

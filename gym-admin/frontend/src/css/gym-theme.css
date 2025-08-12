@@ -1,0 +1,254 @@
+/* ========================================
+   TEMA GLOBAL DEL GYM - NEGRO Y ROJO
+   ======================================== */
+
+:root {
+  /* Colores principales del gym */
+  --gym-black: #1a1a1a;
+  --gym-black-dark: #000000;
+  --gym-black-light: #2d2d2d;
+  --gym-black-lighter: #424242;
+  
+  --gym-red: #d32f2f;
+  --gym-red-dark: #b71c1c;
+  --gym-red-light: #f44336;
+  --gym-red-lighter: #ff5722;
+  
+  /* Gradientes del gym */
+  --gym-gradient-black: linear-gradient(135deg, var(--gym-black) 0%, var(--gym-black-dark) 100%);
+  --gym-gradient-red: linear-gradient(135deg, var(--gym-red) 0%, var(--gym-red-dark) 100%);
+  --gym-gradient-black-light: linear-gradient(135deg, var(--gym-black-light) 0%, var(--gym-black) 100%);
+  
+  /* Colores de texto */
+  --gym-text-primary: #ffffff;
+  --gym-text-secondary: #e0e0e0;
+  --gym-text-muted: #bdbdbd;
+  --gym-text-dark: #212121;
+  
+  /* Colores de estado */
+  --gym-success: #4caf50;
+  --gym-warning: #ff9800;
+  --gym-error: var(--gym-red);
+  --gym-info: #2196f3;
+  
+  /* Sombras */
+  --gym-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --gym-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --gym-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.3);
+  --gym-shadow-red: 0 4px 8px rgba(211, 47, 47, 0.3);
+  
+  /* Bordes */
+  --gym-border-color: rgba(211, 47, 47, 0.3);
+  --gym-border-light: rgba(255, 255, 255, 0.15);
+  
+  /* Transiciones */
+  --gym-transition: all 0.3s ease;
+  --gym-transition-fast: all 0.15s ease;
+  
+  /* Espaciado */
+  --gym-spacing-xs: 4px;
+  --gym-spacing-sm: 8px;
+  --gym-spacing-md: 16px;
+  --gym-spacing-lg: 24px;
+  --gym-spacing-xl: 32px;
+  
+  /* Bordes redondeados */
+  --gym-radius-sm: 4px;
+  --gym-radius-md: 8px;
+  --gym-radius-lg: 12px;
+  --gym-radius-xl: 16px;
+}
+
+/* ========================================
+   CLASES UTILITARIAS DEL TEMA GYM
+   ======================================== */
+
+/* Fondos */
+.bg-gym-black { background: var(--gym-gradient-black) !important; }
+.bg-gym-red { background: var(--gym-gradient-red) !important; }
+.bg-gym-black-light { background: var(--gym-gradient-black-light) !important; }
+
+/* Texto */
+.text-gym-white { color: var(--gym-text-primary) !important; }
+.text-gym-red { color: var(--gym-red) !important; }
+.text-gym-black { color: var(--gym-black-dark) !important; }
+
+/* Bordes */
+.border-gym-red { border-color: var(--gym-red) !important; }
+.border-gym-black { border-color: var(--gym-black) !important; }
+
+/* Sombras */
+.shadow-gym { box-shadow: var(--gym-shadow-md) !important; }
+.shadow-gym-red { box-shadow: var(--gym-shadow-red) !important; }
+
+/* Transiciones */
+.transition-gym { transition: var(--gym-transition) !important; }
+
+/* ========================================
+   COMPONENTES BASE DEL TEMA GYM
+   ======================================== */
+
+/* Botones del tema gym */
+.btn-gym-primary {
+  background: var(--gym-gradient-red) !important;
+  color: var(--gym-text-primary) !important;
+  border: none !important;
+  border-radius: var(--gym-radius-md) !important;
+  transition: var(--gym-transition) !important;
+  box-shadow: var(--gym-shadow-sm) !important;
+}
+
+.btn-gym-primary:hover {
+  background: var(--gym-gradient-black) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--gym-shadow-md) !important;
+}
+
+.btn-gym-secondary {
+  background: var(--gym-gradient-black) !important;
+  color: var(--gym-text-primary) !important;
+  border: 2px solid var(--gym-red) !important;
+  border-radius: var(--gym-radius-md) !important;
+  transition: var(--gym-transition) !important;
+}
+
+.btn-gym-secondary:hover {
+  background: var(--gym-gradient-red) !important;
+  border-color: var(--gym-black) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Cards del tema gym */
+.card-gym {
+  background: white !important;
+  border-radius: var(--gym-radius-md) !important;
+  box-shadow: var(--gym-shadow-sm) !important;
+  border: 1px solid var(--gym-border-color) !important;
+  transition: var(--gym-transition) !important;
+}
+
+.card-gym:hover {
+  box-shadow: var(--gym-shadow-md) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Inputs del tema gym */
+.input-gym {
+  border: 2px solid var(--gym-border-color) !important;
+  border-radius: var(--gym-radius-sm) !important;
+  transition: var(--gym-transition) !important;
+}
+
+.input-gym:focus {
+  border-color: var(--gym-red) !important;
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1) !important;
+}
+
+/* Headers del tema gym */
+.header-gym {
+  background: var(--gym-gradient-black) !important;
+  color: var(--gym-text-primary) !important;
+  border-bottom: 3px solid var(--gym-red) !important;
+}
+
+/* Sidebar del tema gym */
+.sidebar-gym {
+  background: var(--gym-gradient-black) !important;
+  color: var(--gym-text-primary) !important;
+}
+
+.sidebar-gym .q-item:hover {
+  background: var(--gym-gradient-red) !important;
+  transition: var(--gym-transition) !important;
+}
+
+/* Tablas del tema gym */
+.table-gym thead th {
+  background: var(--gym-gradient-black) !important;
+  color: var(--gym-text-primary) !important;
+  border-bottom: 2px solid var(--gym-red) !important;
+}
+
+.table-gym thead th:hover {
+  background: var(--gym-gradient-red) !important;
+  transition: var(--gym-transition) !important;
+}
+
+/* Modales del tema gym */
+.modal-gym .q-card {
+  border: 2px solid var(--gym-red) !important;
+  border-radius: var(--gym-radius-md) !important;
+}
+
+.modal-gym .q-card-section:first-child {
+  background: var(--gym-gradient-black) !important;
+  color: var(--gym-text-primary) !important;
+  border-bottom: 2px solid var(--gym-red) !important;
+}
+
+/* ========================================
+   ANIMACIONES DEL TEMA GYM
+   ======================================== */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseGym {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.6s ease-out;
+}
+
+.animate-pulse-gym {
+  animation: pulseGym 2s infinite;
+}
+
+/* ========================================
+   RESPONSIVE DEL TEMA GYM
+   ======================================== */
+
+@media (max-width: 768px) {
+  :root {
+    --gym-spacing-md: 12px;
+    --gym-spacing-lg: 20px;
+    --gym-radius-md: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --gym-spacing-md: 8px;
+    --gym-spacing-lg: 16px;
+    --gym-radius-md: 4px;
+  }
+} 
