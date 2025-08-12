@@ -21,9 +21,20 @@
           outlined
           clearable
           @update:model-value="handleSearch"
+          @keyup.enter="handleSearch"
         >
           <template v-slot:prepend>
             <q-icon name="search" />
+          </template>
+          <template v-slot:append v-if="searchQuery">
+            <q-btn
+              flat
+              round
+              dense
+              icon="close"
+              @click="clearSearch"
+              color="grey"
+            />
           </template>
         </q-input>
       </div>
@@ -35,7 +46,17 @@
           dense
           outlined
           clearable
-          @update:model-value="loadClients"
+          @update:model-value="handleSearch"
+        />
+      </div>
+      <div class="col-12 col-md-3">
+        <q-btn
+          color="secondary"
+          icon="refresh"
+          label="Recargar"
+          @click="loadClients"
+          dense
+          outline
         />
       </div>
     </div>
@@ -49,6 +70,7 @@
         :pagination="pagination"
         row-key="id"
         @request="onRequest"
+        :rows-per-page-options="[10, 15, 25, 50]"
         class="text-sm"
       >
         <!-- Columna de acciones -->
@@ -100,7 +122,40 @@
             />
           </q-td>
         </template>
+        
+        <!-- Mensaje cuando no hay clientes -->
+        <template v-slot:no-data>
+          <div class="full-width row flex-center q-pa-lg">
+            <div class="text-center">
+              <q-icon name="sentiment_dissatisfied" size="4rem" color="grey-5" />
+              <div class="text-h6 text-grey-6 q-mt-md">No se encontraron clientes</div>
+              <div class="text-caption text-grey-5">
+                Intenta ajustar los filtros o crear un nuevo cliente
+              </div>
+            </div>
+          </div>
+        </template>
       </q-table>
+      
+      <!-- Información de paginación -->
+      <div class="row q-mt-md q-gutter-md items-center justify-between" v-if="clients.length > 0">
+        <div class="col-12 col-md-6">
+          <q-chip
+            color="info"
+            text-color="white"
+            :label="`Mostrando ${clients.length} de ${pagination.rowsNumber} clientes`"
+            size="sm"
+          />
+        </div>
+        <div class="col-12 col-md-6 text-right">
+          <q-chip
+            color="secondary"
+            text-color="white"
+            :label="`Página ${pagination.page} de ${Math.ceil(pagination.rowsNumber / pagination.rowsPerPage)}`"
+            size="sm"
+          />
+        </div>
+      </div>
     </q-card>
 
     <!-- Modal para crear/editar cliente -->
@@ -243,7 +298,8 @@ export default defineComponent({
       descending: false,
       page: 1,
       rowsPerPage: 15,
-      rowsNumber: 0
+      rowsNumber: 0,
+      rowsPerPageOptions: [10, 15, 25, 50]
     })
 
     // Formulario
@@ -372,37 +428,45 @@ export default defineComponent({
           filters.is_active = statusFilter.value
         }
         
+        if (searchQuery.value.trim()) {
+          filters.search = searchQuery.value.trim()
+        }
+        
         console.log('🔄 ClientsPage - Iniciando carga de clientes...')
         console.log('🔍 ClientsPage - Filtros aplicados:', filters)
         console.log('📄 ClientsPage - Página actual:', pagination.value.page)
+        console.log('📊 ClientsPage - Filas por página:', pagination.value.rowsPerPage)
         
         const response = await clientService.getClients(
           pagination.value.page,
           pagination.value.rowsPerPage,
-          filters
+          filters,
+          pagination.value.sortBy,
+          pagination.value.descending
         )
         
         console.log('📡 ClientsPage - Respuesta del servicio:', response)
         
-        // La respuesta de Laravel tiene esta estructura:
+        // La nueva respuesta de Laravel tiene esta estructura:
         // response = {
         //   success: true,
-        //   data: {
-        //     data: [...], // Los clientes reales
+        //   data: [...], // Los clientes directamente
+        //   pagination: {
         //     current_page: 1,
-        //     total: 10,
         //     per_page: 15,
+        //     total: 10,
         //     last_page: 1,
         //     from: 1,
-        //     to: 10
+        //     to: 10,
+        //     rowCount: 10
         //   },
         //   message: "..."
         // }
         
         if (response && response.success && response.data) {
-          // Extraer los clientes de la estructura paginada
-          const clientsData = response.data.data || []
-          const paginationData = response.data
+          // Los clientes ahora vienen directamente en data
+          const clientsData = response.data || []
+          const paginationData = response.pagination
           
           console.log('👥 ClientsPage - Clientes extraídos:', clientsData)
           console.log('📊 ClientsPage - Datos de paginación:', paginationData)
@@ -416,12 +480,15 @@ export default defineComponent({
             clients.value = []
           }
           
-          // Actualizar paginación
-          if (paginationData.total !== undefined) {
-            pagination.value.rowsNumber = paginationData.total
-            pagination.value.page = paginationData.current_page || 1
-            pagination.value.rowsPerPage = paginationData.per_page || 15
-            console.log('📄 ClientsPage - Paginación actualizada:', pagination.value)
+          // Actualizar paginación usando rowCount del backend
+          if (paginationData && paginationData.rowCount !== undefined) {
+            pagination.value = {
+              ...pagination.value,
+              rowsNumber: paginationData.rowCount,
+              page: paginationData.current_page || 1,
+              rowsPerPage: paginationData.per_page || 15
+            }
+            console.log('📄 ClientsPage - Paginación actualizada con rowCount:', pagination.value)
           }
         } else {
           console.warn('⚠️ ClientsPage - Respuesta inesperada:', response)
@@ -439,12 +506,35 @@ export default defineComponent({
     }
 
     const handleSearch = () => {
+      // Resetear a la primera página cuando se busca
       pagination.value.page = 1
+      console.log('🔍 ClientsPage - Búsqueda iniciada:', searchQuery.value)
+      loadClients()
+    }
+
+    // Función para limpiar búsqueda
+    const clearSearch = () => {
+      searchQuery.value = ''
+      pagination.value.page = 1
+      console.log('🧹 ClientsPage - Búsqueda limpiada')
       loadClients()
     }
 
     const onRequest = (props) => {
-      pagination.value = props.pagination
+      console.log('📄 ClientsPage - onRequest llamado con:', props.pagination)
+      
+      // Actualizar la paginación local
+      pagination.value = {
+        ...pagination.value,
+        page: props.pagination.page,
+        rowsPerPage: props.pagination.rowsPerPage,
+        sortBy: props.pagination.sortBy,
+        descending: props.pagination.descending
+      }
+      
+      console.log('📄 ClientsPage - Paginación actualizada:', pagination.value)
+      
+      // Cargar clientes con la nueva paginación
       loadClients()
     }
 
@@ -582,6 +672,7 @@ export default defineComponent({
       // Métodos
       loadClients,
       handleSearch,
+      clearSearch,
       onRequest,
       openCreateDialog,
       openEditDialog,

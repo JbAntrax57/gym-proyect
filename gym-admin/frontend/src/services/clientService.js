@@ -2,11 +2,13 @@ import api from './api'
 
 class ClientService {
   // Obtener todos los clientes con paginación
-  async getClients(page = 1, perPage = 15, filters = {}) {
+  async getClients(page = 1, perPage = 15, filters = {}, sortBy = 'name', descending = false) {
     try {
       const params = {
         page,
         per_page: perPage,
+        sortBy,
+        descending,
         ...filters
       }
       
@@ -16,15 +18,18 @@ class ClientService {
       console.log('📡 ClientService - Respuesta completa de la API:', response)
       console.log('📊 ClientService - Datos de la respuesta:', response.data)
       
-      // La respuesta de Laravel tiene esta estructura:
+      // La nueva respuesta de Laravel tiene esta estructura:
       // {
       //   success: true,
-      //   data: {
-      //     data: [...], // Los clientes reales
+      //   data: [...], // Los clientes directamente
+      //   pagination: {
       //     current_page: 1,
-      //     total: 10,
       //     per_page: 15,
-      //     ...
+      //     total: 10,
+      //     last_page: 1,
+      //     from: 1,
+      //     to: 10,
+      //     rowCount: 10
       //   },
       //   message: "..."
       // }

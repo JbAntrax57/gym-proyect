@@ -13,16 +13,61 @@ class ClientController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $clients = Client::with(['memberships', 'loyaltyDiscounts'])
-                ->orderBy('name')
-                ->paginate(15);
+            $perPage = $request->get('per_page', 15);
+            $page = $request->get('page', 1);
+            $search = $request->get('search');
+            $statusFilter = $request->get('is_active');
+
+            $query = Client::with(['memberships', 'loyaltyDiscounts']);
+
+            // Aplicar filtro de búsqueda
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%");
+                });
+            }
+
+            // Aplicar filtro de estado
+            if ($statusFilter !== null) {
+                $query->where('is_active', $statusFilter);
+            }
+
+            // Obtener el total de registros antes de paginar
+            $totalCount = $query->count();
+
+            // Aplicar ordenamiento
+            $sortBy = $request->get('sortBy', 'name');
+            $descending = $request->get('descending', false);
+            
+            // Validar que la columna de ordenamiento sea válida
+            $allowedSortColumns = ['name', 'email', 'created_at', 'loyalty_points', 'is_active'];
+            if (!in_array($sortBy, $allowedSortColumns)) {
+                $sortBy = 'name';
+            }
+            
+            $direction = $descending ? 'desc' : 'asc';
+            $query->orderBy($sortBy, $direction);
+
+            // Aplicar paginación
+            $clients = $query->paginate($perPage, ['*'], 'page', $page);
 
             return response()->json([
                 'success' => true,
-                'data' => $clients,
+                'data' => $clients->items(),
+                'pagination' => [
+                    'current_page' => $clients->currentPage(),
+                    'per_page' => $clients->perPage(),
+                    'total' => $clients->total(),
+                    'last_page' => $clients->lastPage(),
+                    'from' => $clients->firstItem(),
+                    'to' => $clients->lastItem(),
+                    'rowCount' => $totalCount
+                ],
                 'message' => 'Clientes obtenidos exitosamente'
             ]);
         } catch (\Exception $e) {
