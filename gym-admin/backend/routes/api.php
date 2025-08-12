@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ClientController;
-use App\Http\Controllers\Api\MembershipController;
+use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\Api\ProductController;
 
 /*
@@ -33,17 +33,11 @@ Route::prefix('clients')->group(function () {
 });
 
 // Rutas de Membresías
-Route::prefix('memberships')->group(function () {
-    Route::get('/', [MembershipController::class, 'index']);
-    Route::post('/', [MembershipController::class, 'store']);
-    Route::get('/active', [MembershipController::class, 'active']);
-    Route::get('/expiring-soon', [MembershipController::class, 'expiringSoon']);
-    Route::get('/expired', [MembershipController::class, 'expired']);
-    Route::get('/{id}', [MembershipController::class, 'show']);
-    Route::put('/{id}', [MembershipController::class, 'update']);
-    Route::delete('/{id}', [MembershipController::class, 'destroy']);
-    Route::post('/{id}/renew', [MembershipController::class, 'renew']);
-});
+Route::apiResource('memberships', MembershipController::class);
+Route::get('memberships/search', [MembershipController::class, 'search']);
+Route::get('memberships/stats', [MembershipController::class, 'stats']);
+Route::get('memberships/types', [MembershipController::class, 'types']);
+Route::get('memberships/statuses', [MembershipController::class, 'statuses']);
 
 // Rutas de Productos
 Route::prefix('products')->group(function () {
