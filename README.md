@@ -14,12 +14,12 @@ Sistema completo de gestión para gimnasios que incluye gestión de clientes, me
 ```
 Proyecto Gym/
 ├── gym-admin/                 # Directorio principal del proyecto
-│   ├── gym-backend/          # Backend Laravel
+│   ├── backend/              # Backend Laravel
 │   │   ├── app/              # Lógica de aplicación
 │   │   ├── database/         # Migraciones y seeders
 │   │   ├── routes/           # Rutas de la API
 │   │   └── ...
-│   └── quasar-project/       # Frontend Quasar
+│   └── frontend/             # Frontend Quasar
 │       ├── src/              # Código fuente Vue.js
 │       ├── public/           # Archivos públicos
 │       └── ...
@@ -44,7 +44,7 @@ cd gym-proyect
 
 ### 2. **Configurar el Backend (Laravel)**
 ```bash
-cd gym-admin/gym-backend
+cd gym-admin/backend
 composer install
 cp .env.example .env
 php artisan key:generate
@@ -55,7 +55,7 @@ php artisan serve
 
 ### 3. **Configurar el Frontend (Quasar)**
 ```bash
-cd gym-admin/quasar-project
+cd gym-admin/frontend
 npm install
 quasar dev
 ```
@@ -123,11 +123,11 @@ devServer: {
 
 ```bash
 # Backend
-cd gym-admin/gym-backend
+cd gym-admin/backend
 php artisan test
 
 # Frontend
-cd gym-admin/quasar-project
+cd gym-admin/frontend
 npm run test
 ```
 
